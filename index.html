@@ -1031,20 +1031,26 @@ new Date("2026-06-13T23:59:59");
 
 function checkExpire(){
 
-    if(new Date() > EXP_DATE){
+    console.log("checkExpire() running");
 
-        document.body.innerHTML=`
+    const now = new Date();
+
+    if(now > EXP_DATE){
+
+        console.log("EXPIRE DETECTED");
+
+        document.body.innerHTML = `
         <div style="
         height:100vh;
         display:flex;
         justify-content:center;
         align-items:center;
-        font-size:40px;
-        font-weight:bold;
         background:black;
         color:red;
+        font-size:40px;
+        font-weight:bold;
         ">
-        โปรแกรมหมดอายุแล้ว
+        LICENSE EXPIRED
         </div>
         `;
 
@@ -1872,16 +1878,16 @@ async function login(){
     try{
 
         const res = await fetch(
-            "https://morning-block-55bb.havanalanna.workers.dev/?user="
-            + encodeURIComponent(userInput.value)
-            + "&pass="
-            + encodeURIComponent(passInput.value)
-            + "&t="
-            + Date.now(),
-            {
-                cache:"no-store"
-            }
-        );
+"https://morning-block-55bb.havanalanna.workers.dev/?user="
++ encodeURIComponent(userInput.value)
++ "&pass="
++ encodeURIComponent(passInput.value)
++ "&t="
++ Date.now(),
+{
+    cache:"no-store"
+}
+);
 
         const data = await res.json();
 
@@ -1905,49 +1911,58 @@ if(
 
     setInterval(async()=>{
 
-        try{
+    try{
 
-            checkExpire();
+        checkExpire();
 
-            const r = await fetch(
-                "https://morning-block-55bb.havanalanna.workers.dev/?user="
-                + encodeURIComponent(user)
-                + "&pass="
-                + encodeURIComponent(pass)
-                + "&t="
-                + Date.now(),
-                {
-                    cache:"no-store"
-                }
-            );
+        const r = await fetch(
+"https://morning-block-55bb.havanalanna.workers.dev/?user="
++ encodeURIComponent(user)
++ "&pass="
++ encodeURIComponent(pass)
++ "&t="
++ Date.now(),
+{
+    cache:"no-store"
+}
+);
 
-            const j = await r.json();
+        const j = await r.json();
 
-            if(
-                !j ||
-                j.status !== "ok"
-            ){
+        console.log("License =", j);
 
-                alert(
-                "⛔ License ถูกปิดใช้งาน"
-                );
+        if(
+            !j ||
+            j.status !== "ok"
+        ){
 
-                location.reload();
+            document.body.innerHTML = `
+            <div
+            style="
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            background:black;
+            color:red;
+            font-size:40px;
+            font-weight:bold;
+            ">
+            LICENSE OFF
+            </div>
+            `;
 
-            }
-
-        }catch(e){
-
-            alert(
-            "⛔ License Server Error"
-            );
-
-            location.reload();
+            throw new Error("LICENSE OFF");
 
         }
 
-    },30000);
+    }catch(e){
 
+        console.error(e);
+
+    }
+
+},30000);
 }
 else{
 
