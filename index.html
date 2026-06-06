@@ -1022,7 +1022,36 @@ PREDICTION PATTERN DNA
 
 
 const ROWS=6,DNA_ROWS=4,DEFAULT_COLS=12;
+/* =========================
+LICENSE SYSTEM
+========================= */
 
+const EXP_DATE =
+new Date("2026-06-13T23:59:59");
+
+function checkExpire(){
+
+    if(new Date() > EXP_DATE){
+
+        document.body.innerHTML=`
+        <div style="
+        height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:40px;
+        font-weight:bold;
+        background:black;
+        color:red;
+        ">
+        โปรแกรมหมดอายุแล้ว
+        </div>
+        `;
+
+        throw new Error("Expired");
+    }
+
+}
 const state={
 history:[],
 predictions:[],
@@ -1819,151 +1848,135 @@ function updateQuickView(){
     box.innerHTML = html;
 }
 
-/* =========================
-LICENSE SYSTEM
-========================= */
-
-const EXP_DATE =
-new Date("2026-06-13T23:59:59");
-
-function checkExpire(){
-
-if(new Date() > EXP_DATE){
-
-document.body.innerHTML=`
-<div
-style="
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-font-size:40px;
-font-weight:bold;
-background:black;
-color:red;
-">
-โปรแกรมหมดอายุแล้ว
-</div>
-`;
-
-throw new Error("Expired");
-}
-
-}
 
 async function login(){
 
-const userInput =
-document.getElementById("userInput");
+    const userInput =
+    document.getElementById("userInput");
 
-const passInput =
-document.getElementById("passInput");
+    const passInput =
+    document.getElementById("passInput");
 
-const loginBoxEl =
-document.getElementById("loginBox");
+    const loginBoxEl =
+    document.getElementById("loginBox");
 
-const appEl =
-document.getElementById("app");
+    const appEl =
+    document.getElementById("app");
 
-const loginErrEl =
-document.getElementById("loginErr");
+    const loginErrEl =
+    document.getElementById("loginErr");
 
-loginErrEl.textContent =
-"กำลังตรวจสอบ License...";
+    loginErrEl.textContent =
+    "กำลังตรวจสอบ License...";
 
-try{
+    try{
 
-const res = await fetch(
-"https://morning-block-55bb.havanalanna.workers.dev/?user="
-+
-encodeURIComponent(userInput.value)
-+
-"&pass="
-+
-encodeURIComponent(passInput.value)
-);
+        const res = await fetch(
+            "https://morning-block-55bb.havanalanna.workers.dev/?user="
+            + encodeURIComponent(userInput.value)
+            + "&pass="
+            + encodeURIComponent(passInput.value)
+            + "&t="
+            + Date.now(),
+            {
+                cache:"no-store"
+            }
+        );
 
-const data =
-await res.json();
+        const data = await res.json();
 
-if(data.status==="ok"){
+if(
+    data &&
+    data.status === "ok"
+){
 
-checkExpire();
+    checkExpire();
 
-loginBoxEl.style.display =
-"none";
+    loginBoxEl.style.display =
+    "none";
 
-appEl.style.display =
-"block";
+    appEl.style.display =
+    "block";
 
-updateUI();
+    updateUI();
 
-const user =
-userInput.value;
+    const user = userInput.value;
+    const pass = passInput.value;
 
-const pass =
-passInput.value;
+    setInterval(async()=>{
 
-setInterval(async()=>{
+        try{
 
-try{
+            checkExpire();
 
-const r = await fetch(
-"https://morning-block-55bb.havanalanna.workers.dev/?user="
-+
-encodeURIComponent(user)
-+
-"&pass="
-+
-encodeURIComponent(pass)
-);
+            const r = await fetch(
+                "https://morning-block-55bb.havanalanna.workers.dev/?user="
+                + encodeURIComponent(user)
+                + "&pass="
+                + encodeURIComponent(pass)
+                + "&t="
+                + Date.now(),
+                {
+                    cache:"no-store"
+                }
+            );
 
-const j =
-await r.json();
+            const j = await r.json();
 
-if(j.status!=="ok"){
+            if(
+                !j ||
+                j.status !== "ok"
+            ){
 
-alert(
-"⛔ License ถูกปิดใช้งาน"
-);
+                alert(
+                "⛔ License ถูกปิดใช้งาน"
+                );
 
-location.reload();
+                location.reload();
+
+            }
+
+        }catch(e){
+
+            alert(
+            "⛔ License Server Error"
+            );
+
+            location.reload();
+
+        }
+
+    },30000);
+
+}
+else{
+
+    loginErrEl.textContent =
+    "User หรือ Password ไม่ถูกต้อง";
 
 }
 
-}catch(e){}
+    }catch(e){
 
-},30000);
+        loginErrEl.textContent =
+        "ไม่สามารถเชื่อมต่อ License Server";
 
-}else{
-
-loginErrEl.textContent =
-"User หรือ Password ไม่ถูกต้อง";
+    }
 
 }
-
-}catch(e){
-
-loginErrEl.textContent =
-"ไม่สามารถเชื่อมต่อ License Server";
-
-}
-
-}
-
 function togglePassword(){
 
-const p =
-document.getElementById(
-"passInput"
-);
+    const p =
+    document.getElementById(
+    "passInput"
+    );
 
-p.type =
-p.type==="password"
-?
-"text"
-:
-"password";
+    p.type =
+    p.type==="password"
+    ?
+    "text"
+    :
+    "password";
 
 }
 
@@ -1971,29 +1984,35 @@ document.addEventListener(
 "keydown",
 e=>{
 
-if(e.key==="Enter"){
+    if(e.key==="Enter"){
 
-const box =
-document.getElementById(
-"loginBox"
+        const box =
+        document.getElementById(
+        "loginBox"
+        );
+
+        if(
+        box &&
+        box.style.display!=="none"
+        ){
+            login();
+        }
+
+    }
+
+}
 );
 
-if(
-box &&
-box.style.display!=="none"
-){
-login();
+function toggleModal() {
+    alert("Signal system active");
 }
 
-}
+/* ตรวจวันหมดอายุตอนเปิดเว็บ */
+checkExpire();
 
-}
-);
 generatePrediction();
 updateUI();
 updateQuickView();
-
-function toggleModal() { alert("Signal system active"); }
 
 </script>
 </body>
